@@ -1,0 +1,1189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+<meta name="apple-mobile-web-app-title" content="PD Health"/>
+<meta name="theme-color" content="#0f172a"/>
+<title>PD Health</title>
+<link rel="manifest" id="manifestLink"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-title" content="PD Bio-Age"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black"/>
+<link rel="apple-touch-icon" id="appleTouchIcon"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #f1f5f9; --card: #ffffff; --text: #0f172a; --muted: #64748b;
+    --faint: #94a3b8; --border: #e2e8f0; --accent: #6366f1;
+    --green: #10b981; --red: #ef4444; --amber: #f59e0b; --purple: #8b5cf6;
+    --pink: #ec4899; --cyan: #06b6d4; --indigo: #6366f1;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding-bottom: 80px; }
+  select, input, button { font-family: 'Outfit', sans-serif; }
+  input:focus, select:focus { outline: none; }
+  ::-webkit-scrollbar { display: none; }
+
+  /* HEADER */
+  .header { background: var(--card); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
+  .header-top { max-width: 600px; margin: 0 auto; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; }
+  .logo { width: 36px; height: 36px; background: #0a0a0a; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 900; color: #D4AF37; letter-spacing: -0.5px; flex-shrink: 0; border: 1.5px solid #D4AF37; }
+  .header-title { font-size: 15px; font-weight: 700; color: var(--text); letter-spacing: -0.3px; }
+  .header-sub { font-size: 10px; color: var(--amber); font-weight: 600; }
+  .settings-btn { background: none; border: none; font-size: 20px; cursor: pointer; padding: 4px; }
+
+  /* TABS */
+  .tabs { max-width: 600px; margin: 0 auto; display: flex; border-top: 1px solid #f8fafc; }
+  .tab { flex: 1; padding: 10px 4px; border: none; background: none; cursor: pointer; font-size: 12px; font-weight: 600; color: var(--faint); border-bottom: 2px solid transparent; transition: all 0.15s; }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  /* SETTINGS PANEL */
+  .settings-panel { background: #fafafa; border-top: 1px solid var(--border); padding: 16px; max-width: 600px; margin: 0 auto; display: none; }
+  .settings-panel.open { display: block; }
+  .settings-label { font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: 8px; }
+  .settings-hint { font-size: 11px; color: var(--muted); line-height: 1.5; margin-bottom: 10px; }
+  .settings-hint a { color: var(--accent); }
+  .settings-row { display: flex; gap: 8px; align-items: center; }
+  .settings-input { flex: 1; padding: 9px 12px; border: 1.5px solid var(--border); border-radius: 9px; font-size: 13px; color: var(--text); background: #fff; }
+  .btn-connect { padding: 9px 16px; background: var(--accent); color: #fff; border: none; border-radius: 9px; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+  .btn-disconnect { padding: 6px 12px; border: 1.5px solid #fca5a5; border-radius: 8px; background: #fff5f5; color: var(--red); font-size: 11px; font-weight: 600; cursor: pointer; }
+  .settings-meta { display: flex; gap: 12px; margin-top: 12px; }
+  .meta-field label { font-size: 10px; color: var(--faint); font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; display: block; margin-bottom: 4px; }
+  .meta-field input, .meta-field select { padding: 7px 10px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 13px; color: var(--text); background: #fff; width: 100%; }
+  .demo-link { font-size: 11px; color: var(--accent); background: none; border: none; cursor: pointer; text-decoration: underline; margin-top: 8px; display: block; }
+  .connected-badge { font-size: 12px; color: var(--green); font-weight: 600; }
+
+  /* PERIOD CONTROLS */
+  .controls { max-width: 600px; margin: 0 auto; padding: 14px 16px 0; display: flex; gap: 8px; }
+  .period-select { flex: 1; padding: 10px 12px; border: 1.5px solid var(--border); border-radius: 10px; font-size: 13px; font-weight: 600; color: var(--text); background: var(--card); }
+  .range-select { flex: 2; padding: 10px 12px; border: 1.5px solid var(--border); border-radius: 10px; font-size: 13px; color: var(--text); background: var(--card); }
+
+  /* CONTENT */
+  .content { max-width: 600px; margin: 0 auto; padding: 14px 16px 0; }
+
+  /* CARDS */
+  .card { background: var(--card); border-radius: 16px; padding: 16px; margin-bottom: 12px; box-shadow: 0 1px 4px rgba(0,0,0,0.05); }
+  .card-title { font-size: 10px; color: var(--faint); text-transform: uppercase; letter-spacing: 0.12em; font-weight: 700; margin-bottom: 10px; }
+
+  /* BIO AGE */
+  .bioage-wrap { text-align: center; padding: 8px 0 12px; }
+  .bioage-label { font-size: 11px; letter-spacing: 0.12em; color: var(--faint); text-transform: uppercase; font-weight: 600; }
+  .bioage-num { font-size: 58px; font-weight: 900; letter-spacing: -3px; line-height: 1; margin: 4px 0 2px; }
+  .bioage-diff { font-size: 13px; color: var(--muted); }
+  .bioage-badge { display: inline-block; margin-top: 8px; padding: 4px 14px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+  .bioage-source { font-size: 10px; color: #cbd5e1; margin-top: 6px; }
+
+  /* METRIC GRID */
+  .metric-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+  .metric-card { background: var(--card); border-radius: 14px; padding: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); border: 1.5px solid var(--border); }
+  .metric-label { font-size: 10px; color: var(--faint); text-transform: uppercase; letter-spacing: 0.1em; font-weight: 600; }
+  .metric-val { font-size: 24px; font-weight: 800; color: var(--text); letter-spacing: -0.5px; margin-top: 2px; line-height: 1.1; }
+  .metric-unit { font-size: 11px; font-weight: 500; color: var(--faint); margin-left: 2px; }
+  .metric-icon { font-size: 20px; float: right; margin-top: -2px; }
+  .metric-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .sparkline { margin-top: 8px; width: 100%; height: 30px; }
+
+  /* SLEEP DONUT */
+  .sleep-viz { display: flex; align-items: center; gap: 14px; }
+  .donut-wrap { flex-shrink: 0; }
+  .sleep-legend { flex: 1; display: flex; flex-direction: column; gap: 6px; }
+  .legend-row { display: flex; align-items: center; gap: 6px; font-size: 12px; }
+  .legend-dot { width: 9px; height: 9px; border-radius: 2px; flex-shrink: 0; }
+  .legend-name { color: var(--muted); flex: 1; }
+  .legend-val { font-weight: 700; color: var(--text); }
+
+  /* HEART BARS */
+  .range-bar-wrap { margin-bottom: 12px; }
+  .range-bar-top { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px; }
+  .range-bar-track { height: 6px; background: #f1f5f9; border-radius: 3px; overflow: hidden; }
+  .range-bar-fill { height: 100%; border-radius: 3px; transition: width 0.6s ease; }
+
+  /* COMPARE */
+  .compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+  .compare-card { background: var(--card); border-radius: 14px; padding: 14px; box-shadow: 0 1px 4px rgba(0,0,0,0.05); }
+  .compare-header { font-size: 10px; font-weight: 700; color: var(--faint); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 10px; }
+  .compare-select { width: 100%; padding: 7px 10px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 12px; color: var(--text); background: #f8fafc; margin-bottom: 6px; }
+  .compare-row { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; border-bottom: 1px solid #f8fafc; font-size: 12px; }
+  .compare-row-label { color: var(--muted); }
+  .compare-row-val { font-weight: 700; color: var(--text); }
+  .delta-card { background: #0f172a; border-radius: 14px; padding: 14px; }
+  .delta-title { font-size: 10px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 10px; }
+  .delta-row { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid #1e293b; font-size: 12px; }
+  .delta-label { color: #475569; }
+
+  /* LOADING */
+  .loader { text-align: center; padding: 48px 16px; color: var(--faint); }
+  .spinner { width: 28px; height: 28px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 10px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  .fade-up { animation: fadeUp 0.3s ease forwards; }
+
+  /* SUMMARY ROWS */
+  .summary-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f8fafc; font-size: 13px; }
+  .summary-row:last-child { border-bottom: none; }
+  .summary-key { color: var(--muted); }
+  .summary-val { font-weight: 600; color: var(--text); }
+
+  /* VO2 BIG */
+  .vo2-big { font-size: 48px; font-weight: 900; letter-spacing: -2px; line-height: 1; }
+  .vo2-unit { font-size: 13px; font-weight: 500; color: var(--faint); margin-left: 4px; }
+  .vo2-status { font-size: 13px; color: var(--muted); margin-top: 4px; }
+
+  .no-data { color: #cbd5e1; font-size: 13px; text-align: center; padding: 16px; }
+  .empty-dash { color: #cbd5e1; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-top">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div class="logo">PD</div>
+      <div>
+        <div class="header-title" id="headerTitle">Longevity Tracker</div>
+        <div class="header-sub" id="demoTag">DEMO DATA</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button class="btn-disconnect" id="btnDisconnect" style="display:none" onclick="disconnect()">Disconnect</button>
+      <button class="settings-btn" onclick="toggleSettings()">⚙️</button>
+    </div>
+  </div>
+
+  <!-- SETTINGS -->
+  <div class="settings-panel" id="settingsPanel">
+    <div id="connectSection">
+      <div class="settings-label">Connect Your Fitbit</div>
+      <div class="settings-hint">
+        1. Register a free Personal app at <a href="https://dev.fitbit.com/apps/new" target="_blank">dev.fitbit.com/apps/new</a><br>
+        2. Set Callback URL to: <code id="redirectUriDisplay" style="font-size:10px;background:#f1f5f9;padding:2px 5px;border-radius:3px"></code><br>
+        3. Paste your Client ID below
+      </div>
+      <div class="settings-row">
+        <input class="settings-input" id="clientIdInput" placeholder="Fitbit Client ID (e.g. 23ABCD)"/>
+        <button class="btn-connect" onclick="connectFitbit()">Connect</button>
+      </div>
+      <button class="demo-link" onclick="useDemoMode()">Continue with demo data instead</button>
+    </div>
+    <div id="connectedSection" style="display:none">
+      <div class="connected-badge">✓ Fitbit connected — profile auto-loaded</div>
+      <div id="profileInfo"></div>
+      <div style="margin-top:12px;padding:10px;background:#f0f9ff;border-radius:10px;border:1px solid #bae6fd">
+        <div style="font-size:11px;font-weight:700;color:#0369a1;margin-bottom:6px">📱 Enter Cardio Fitness Score from Fitbit app</div>
+        <div style="font-size:10px;color:#64748b;margin-bottom:8px">Fitbit app → Today → scroll to Cardio Fitness Score → enter the number here</div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <input type="number" id="manualVO2" placeholder="e.g. 56" step="0.1"
+            style="width:90px;padding:7px 10px;border:1.5px solid #bae6fd;border-radius:8px;font-size:14px;font-weight:700"
+            onchange="saveManualVO2()"/>
+          <span style="font-size:11px;color:#64748b">ml/kg/min</span>
+          <span id="vo2SavedMsg" style="font-size:11px;color:#10b981;display:none">✓ Saved</span>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+        <button onclick="showDebug()" style="font-size:11px;color:var(--accent);background:none;border:none;cursor:pointer;text-decoration:underline">Show cached data (debug)</button>
+        <button onclick="fetchRawSleep()" style="font-size:11px;color:#10b981;background:none;border:none;cursor:pointer;text-decoration:underline">🔍 Fetch raw sleep API for yesterday</button>
+        <button onclick="clearAllCache()" style="font-size:11px;color:#ef4444;background:none;border:none;cursor:pointer;text-decoration:underline">🗑️ Clear cache & re-fetch</button>
+      </div>
+    </div>
+    <div id="debugPanel" style="display:none;margin-top:10px;background:#0f172a;border-radius:10px;padding:12px;font-size:10px;color:#94a3b8;white-space:pre-wrap;word-break:break-all;max-height:200px;overflow-y:auto;font-family:monospace"></div>
+    <div class="settings-meta">
+      <div class="meta-field" style="flex:1">
+        <label>Age (auto from Fitbit)</label>
+        <input type="number" id="chronoAge" value="35" onchange="saveProfile()" style="background:#f8fafc"/>
+      </div>
+      <div class="meta-field" style="flex:1">
+        <label>Sex (auto from Fitbit)</label>
+        <select id="userSex" onchange="saveProfile()">
+          <option value="male">Male</option>
+          <option value="female">Female</option>
+        </select>
+      </div>
+    </div>
+    <div style="font-size:10px;color:var(--faint);margin-top:6px">Age, sex, height & weight are auto-read from your Fitbit profile. Edit manually if needed.</div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('overview',this)">Overview</button>
+    <button class="tab" onclick="switchTab('sleep',this)">Sleep</button>
+    <button class="tab" onclick="switchTab('heart',this)">Heart</button>
+    <button class="tab" onclick="switchTab('compare',this)">Compare</button>
+  </div>
+</div>
+
+<!-- PERIOD CONTROLS -->
+<div class="controls" id="periodControls">
+  <select class="period-select" id="periodSelect" onchange="onPeriodChange()">
+    <option value="daily">Daily</option>
+    <option value="weekly">Weekly</option>
+    <option value="monthly">Monthly</option>
+    <option value="quarterly">Quarterly</option>
+    <option value="annually">Annually</option>
+  </select>
+  <select class="range-select" id="rangeSelect" onchange="onRangeChange()"></select>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="content" id="mainContent"></div>
+
+<script>
+// ── STATE ──────────────────────────────────────────────────────────────────
+let state = {
+  token: null, useMock: true, profile: null,
+  chronoAge: 35, sex: 'male', manualVO2: null,
+  period: 'daily', offset: 0,
+  activeTab: 'overview',
+  data: null, loading: false,
+  compareSlots: [
+    { period: 'weekly', offset: 0, data: null },
+    { period: 'weekly', offset: 1, data: null }
+  ]
+};
+
+// ── INIT ──────────────────────────────────────────────────────────────────
+// ── PWA SETUP ─────────────────────────────────────────────────────────────
+function setupPWA() {
+  // Generate icon using Canvas
+  const canvas = document.createElement('canvas');
+  canvas.width = 512; canvas.height = 512;
+  const ctx = canvas.getContext('2d');
+
+  // Black background
+  ctx.fillStyle = '#0a0a0a';
+  ctx.beginPath();
+  ctx.roundRect(0, 0, 512, 512, 80);
+  ctx.fill();
+
+  // Gold border
+  ctx.strokeStyle = '#D4AF37';
+  ctx.lineWidth = 18;
+  ctx.beginPath();
+  ctx.roundRect(9, 9, 494, 494, 74);
+  ctx.stroke();
+
+  // "PD" text - large bold gold
+  ctx.fillStyle = '#D4AF37';
+  ctx.font = 'bold 220px Georgia, serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('PD', 256, 210);
+
+  // Divider line
+  ctx.strokeStyle = '#D4AF37';
+  ctx.lineWidth = 3;
+  ctx.globalAlpha = 0.5;
+  ctx.beginPath();
+  ctx.moveTo(80, 330); ctx.lineTo(432, 330);
+  ctx.stroke();
+  ctx.globalAlpha = 1;
+
+  // "Bio-Age" text - smaller gold
+  ctx.fillStyle = '#D4AF37';
+  ctx.font = 'bold 90px Georgia, serif';
+  ctx.letterSpacing = '4px';
+  ctx.fillText('Bio-Age', 256, 415);
+
+  const iconDataURL = canvas.toDataURL('image/png');
+
+  // Set apple touch icon
+  const appleIcon = document.getElementById('appleTouchIcon');
+  if (appleIcon) appleIcon.href = iconDataURL;
+
+  // Create and inject manifest
+  const manifest = {
+    name: 'PD Bio-Age',
+    short_name: 'PD Bio-Age',
+    description: 'Personal longevity and biological age tracker',
+    start_url: window.location.pathname,
+    display: 'standalone',
+    background_color: '#0a0a0a',
+    theme_color: '#0a0a0a',
+    orientation: 'portrait',
+    icons: [
+      { src: iconDataURL, sizes: '192x192', type: 'image/png' },
+      { src: iconDataURL, sizes: '512x512', type: 'image/png' },
+    ]
+  };
+  const manifestBlob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
+  const manifestURL = URL.createObjectURL(manifestBlob);
+  const manifestLink = document.getElementById('manifestLink');
+  if (manifestLink) manifestLink.href = manifestURL;
+}
+
+window.onload = () => {
+  try { setupPWA(); } catch(e) { console.log('PWA setup error:', e); }
+  document.getElementById('redirectUriDisplay').textContent = location.origin;
+
+  // Load saved state
+  let saved = null, exp = null;
+  try { saved = localStorage.getItem('pd_token'); exp = localStorage.getItem('pd_token_exp'); } catch(e) {}
+  if (saved && exp && Date.now() < parseInt(exp)) {
+    state.token = saved; state.useMock = false;
+    document.getElementById('btnDisconnect').style.display = 'inline-block';
+    document.getElementById('connectSection').style.display = 'none';
+    document.getElementById('connectedSection').style.display = 'block';
+    document.getElementById('demoTag').style.display = 'none';
+  }
+  const age = localStorage.getItem('pd_age');
+  const savedVO2 = localStorage.getItem('pd_vo2');
+  if (savedVO2) {
+    state.manualVO2 = parseFloat(savedVO2);
+    const vo2El = document.getElementById('manualVO2');
+    if (vo2El) vo2El.value = savedVO2;
+  }
+  const sex = localStorage.getItem('pd_sex');
+  if (age) { state.chronoAge = parseInt(age); document.getElementById('chronoAge').value = age; }
+  if (sex) { state.sex = sex; document.getElementById('userSex').value = sex; }
+
+  // Fetch Fitbit profile (age, height, weight, name)
+  async function fetchFitbitProfile() {
+    try {
+      const r = await fetch('https://api.fitbit.com/1/user/-/profile.json', {
+        headers: { Authorization: 'Bearer ' + state.token }
+      });
+      if (!r.ok) return;
+      const d = await r.json();
+      const p = d.user;
+      if (p) {
+        // Update age
+        if (p.age) {
+          state.chronoAge = p.age;
+          document.getElementById('chronoAge').value = p.age;
+          localStorage.setItem('pd_age', p.age);
+        }
+        // Update sex
+        if (p.gender) {
+          const sex = p.gender.toLowerCase() === 'female' ? 'female' : 'male';
+          state.sex = sex;
+          document.getElementById('userSex').value = sex;
+          localStorage.setItem('pd_sex', sex);
+        }
+        // Store height and weight for display
+        if (p.height) { state.height = p.height; localStorage.setItem('pd_height', p.height); }
+        if (p.weight) { state.weight = p.weight; localStorage.setItem('pd_weight', p.weight); }
+        // Title stays as "Longevity Tracker" - no override
+        // Show profile info in settings
+        const info = document.getElementById('profileInfo');
+        if (info) {
+          info.innerHTML = '<div style="font-size:11px;color:var(--muted);margin-top:8px;line-height:1.8">' +
+            (p.displayName ? '👤 ' + p.displayName + '<br>' : '') +
+            (p.age ? '🎂 Age: ' + p.age + '<br>' : '') +
+            (p.height ? '📏 Height: ' + p.height + ' cm<br>' : '') +
+            (p.weight ? '⚖️ Weight: ' + p.weight + ' kg<br>' : '') +
+            (p.gender ? '⚧ ' + p.gender : '') +
+          '</div>';
+        }
+        console.log('Fitbit profile loaded:', p.displayName, 'age:', p.age, 'height:', p.height, 'weight:', p.weight);
+      }
+    } catch(e) { console.error('Profile fetch error', e); }
+  }
+
+  // Handle OAuth redirect
+  if (location.hash.includes('access_token')) {
+    const p = new URLSearchParams(location.hash.slice(1));
+    const t = p.get('access_token');
+    const exp = Date.now() + parseInt(p.get('expires_in') || '604800') * 1000;
+    if (t) {
+      localStorage.setItem('pd_token', t);
+      localStorage.setItem('pd_token_exp', exp.toString());
+      state.token = t; state.useMock = false;
+      history.replaceState(null, '', location.pathname);
+      document.getElementById('btnDisconnect').style.display = 'inline-block';
+      document.getElementById('connectSection').style.display = 'none';
+      document.getElementById('connectedSection').style.display = 'block';
+      document.getElementById('demoTag').style.display = 'none';
+      fetchFitbitProfile();
+    }
+  }
+
+  // Also fetch profile on reload if already connected
+  if (state.token) fetchFitbitProfile();
+
+  populateRangeSelect();
+  loadData();
+};
+
+// ── DATE HELPERS ──────────────────────────────────────────────────────────
+function fmt(d) { return d.toISOString().split('T')[0]; }
+function addDays(d, n) { const r = new Date(d); r.setDate(r.getDate() + n); return r; }
+function startOfWeek(d) { const r = new Date(d); r.setDate(r.getDate() - r.getDay()); return r; }
+
+function getPeriodRange(period, offset) {
+  // Use local date to avoid timezone issues
+  const now = new Date();
+  const localNow = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  if (period === 'daily') {
+    const d = addDays(localNow, -offset);
+    const label = offset === 0 ? 'Today' : offset === 1 ? 'Yesterday' : d.toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'});
+    return { start: fmt(d), end: fmt(d), label };
+  }
+  if (period === 'weekly') {
+    const s = addDays(startOfWeek(localNow), -offset * 7);
+    const eRaw = addDays(s, 6);
+    const e = eRaw > localNow ? localNow : eRaw;
+    return { start: fmt(s), end: fmt(e), label: 'Week of ' + fmt(s) };
+  }
+  if (period === 'monthly') {
+    const d = new Date(localNow.getFullYear(), localNow.getMonth() - offset, 1);
+    const eRaw = new Date(d.getFullYear(), d.getMonth() + 1, 0);
+    // Cap end to today so we don't fetch future dates
+    const e = eRaw > localNow ? localNow : eRaw;
+    return { start: fmt(d), end: fmt(e), label: d.toLocaleString('default', { month: 'long', year: 'numeric' }) };
+  }
+  if (period === 'quarterly') {
+    const qm = Math.floor(now.getMonth() / 3) * 3 - offset * 3;
+    const d = new Date(now.getFullYear(), qm, 1);
+    const e = new Date(d.getFullYear(), d.getMonth() + 3, 0);
+    return { start: fmt(d), end: fmt(e), label: 'Q' + (Math.floor(d.getMonth() / 3) + 1) + ' ' + d.getFullYear() };
+  }
+  if (period === 'annually') {
+    const d = new Date(now.getFullYear() - offset, 0, 1);
+    return { start: fmt(d), end: fmt(new Date(now.getFullYear() - offset, 11, 31)), label: '' + (now.getFullYear() - offset) };
+  }
+}
+
+function getOffsetCount(p) {
+  return { daily: 30, weekly: 26, monthly: 24, quarterly: 8, annually: 5 }[p];
+}
+
+function populateRangeSelect() {
+  const sel = document.getElementById('rangeSelect');
+  sel.innerHTML = '';
+  const count = getOffsetCount(state.period);
+  for (let i = 0; i < count; i++) {
+    const r = getPeriodRange(state.period, i);
+    const opt = document.createElement('option');
+    opt.value = i; opt.textContent = r.label;
+    if (i === state.offset) opt.selected = true;
+    sel.appendChild(opt);
+  }
+}
+
+// ── MOCK DATA ─────────────────────────────────────────────────────────────
+function mockDay(dateStr) {
+  let s = dateStr.split('').reduce((a, c) => (a * 31 + c.charCodeAt(0)) & 0xffffffff, 0);
+  const rnd = (min, max) => { s = (s * 1664525 + 1013904223) & 0xffffffff; return min + (Math.abs(s) % 10000) / 10000 * (max - min); };
+  const total = Math.round(rnd(360, 510));
+  const deep = Math.round(rnd(50, 110));
+  const rem = Math.round(rnd(80, 130));
+  const light = Math.round(rnd(120, 180));
+  const awake = Math.max(10, total - deep - rem - light);
+  return {
+    date: dateStr, rhr: Math.round(rnd(52, 72)), vo2max: parseFloat(rnd(38, 55).toFixed(1)),
+    steps: Math.round(rnd(4000, 14000)),
+    sleep: {
+      startTime: '23:' + String(Math.round(rnd(0, 59))).padStart(2, '0'),
+      duration: total,
+      stages: { deep, rem, light, awake },
+      avgHR: Math.round(rnd(52, 65)), minHR: Math.round(rnd(44, 55)),
+      hrv: Math.round(rnd(28, 72))
+    }
+  };
+}
+
+function getMockDays(start, end) {
+  const days = []; let cur = new Date(start); const endD = new Date(end);
+  while (cur <= endD) { days.push(mockDay(fmt(cur))); cur = addDays(cur, 1); }
+  return days;
+}
+
+// ── FITBIT API ────────────────────────────────────────────────────────────
+async function fitbitFetch(path, ver) {
+  const r = await fetch('https://api.fitbit.com/1/user/-/' + path, {
+    headers: { Authorization: 'Bearer ' + state.token }
+  });
+  if (!r.ok) throw new Error(r.status + ' ' + path);
+  return r.json();
+}
+
+// ── FITBIT SMART CACHED FETCH ────────────────────────────────────────────
+// Caches each day's data in localStorage. Re-fetches only missing days.
+// Adds 200ms delay between calls to avoid 429 rate limiting.
+const CACHE_PREFIX = 'pd_day_';
+
+const CACHE_VERSION = 'v5'; // v5: fixed HRV path + classic sleep // Bump to invalidate old cached data
+function getCached(date) {
+  try {
+    const v = localStorage.getItem(CACHE_PREFIX + date);
+    if (!v) return null;
+    const parsed = JSON.parse(v);
+    // Invalidate old cache entries without version or wrong version
+    if (!parsed._v || parsed._v !== CACHE_VERSION) return null;
+    return parsed;
+  } catch(e) { return null; }
+}
+function setCached(date, data) {
+  try { localStorage.setItem(CACHE_PREFIX + date, JSON.stringify({...data, _v: CACHE_VERSION})); } catch(e) {}
+}
+
+async function fetchOneDay(date) {
+  // Return cached if available
+  const cached = getCached(date);
+  if (cached) return cached;
+
+  const get = async (url, ver) => {
+    try {
+      const v = ver || '1';
+      const r = await fetch('https://api.fitbit.com/' + v + '/user/-/' + url, {
+        method: 'GET', mode: 'cors', credentials: 'omit',
+        headers: { 'Authorization': 'Bearer ' + state.token, 'Accept': 'application/json' }
+      });
+      if (!r.ok) return null;
+      return await r.json();
+    } catch(e) { return null; }
+  };
+
+  // Fetch all metrics for this date in parallel
+  const [hrData, sleepData, stepsData, hrvData] = await Promise.all([
+    get('activities/heart/date/' + date + '/1d.json'),
+    get('sleep/date/' + date + '.json', '1.2').then(r => r || get('sleep/date/' + date + '.json', '1')),
+    get('activities/steps/date/' + date + '/1d.json'),
+    get('hrv/date/' + date + '/all.json'),
+  ]);
+
+  // Parse RHR
+  const rhr = hrData?.['activities-heart']?.[0]?.value?.restingHeartRate || null;
+
+  // Parse steps
+  const stepsArr = stepsData?.['activities-steps'] || [];
+  const steps = stepsArr.length ? (parseInt(stepsArr[0]?.value) || null) : null;
+
+  // HRV structure: hrv[0].minutes[N].value.rmssd (per-minute readings during sleep)
+  // We average all minute readings to get the nightly HRV
+  const hrvArr = hrvData?.hrv || [];
+  let hrv = null;
+  if (hrvArr.length > 0) {
+    const entry = hrvArr[0];
+    // Try minutes array (confirmed structure from API)
+    const mins = entry?.minutes || [];
+    if (mins.length > 0) {
+      const rmssdVals = mins.map(m => m?.value?.rmssd).filter(v => v != null && v > 0);
+      if (rmssdVals.length > 0) {
+        hrv = parseFloat((rmssdVals.reduce((a,b) => a+b, 0) / rmssdVals.length).toFixed(1));
+      }
+    }
+    // Fallback: try direct value paths
+    if (!hrv) {
+      hrv = entry?.value?.rmssd ? parseFloat(entry.value.rmssd) :
+            entry?.value?.dailyRmssd ? parseFloat(entry.value.dailyRmssd) : null;
+    }
+  }
+
+  // Parse sleep
+  const sleepList = sleepData?.sleep || [];
+  const sleep = sleepList.sort((a,b) => (b.minutesAsleep||0)-(a.minutesAsleep||0))[0] || null;
+  let sleepObj = null;
+  if (sleep) {
+    const sum = sleep.levels?.summary || {};
+    const data = sleep.levels?.data || [];
+    const minuteData = sleep.minuteData || [];
+    let stages = { deep:0, rem:0, light:0, awake:0 };
+    let classicMode = false;
+
+    if ((sum.deep?.minutes||0) + (sum.rem?.minutes||0) > 0) {
+      // Full stages from summary (v1.2 if CORS allows)
+      stages = { deep:sum.deep?.minutes||0, rem:sum.rem?.minutes||0,
+        light:sum.light?.minutes||0, awake:sum.wake?.minutes||sum.awake?.minutes||0 };
+    } else if (data.length > 0 && (data.some(e => e.level==='deep' || e.level==='rem'))) {
+      // Stages from data array
+      let d=0,rm=0,l=0,aw=0;
+      data.forEach(e => {
+        const m = Math.round((e.seconds||e.duration||0)/60);
+        const lv=(e.level||'').toLowerCase();
+        if(lv==='deep')d+=m; else if(lv==='rem')rm+=m;
+        else if(lv==='light')l+=m; else if(lv==='wake'||lv==='awake')aw+=m;
+      });
+      stages = {deep:d,rem:rm,light:l,awake:aw};
+    } else if (minuteData.length > 0) {
+      // Classic mode: minuteData with values 1=asleep, 2=restless, 3=awake
+      let asleep=0, restless=0, awake=0;
+      minuteData.forEach(m => {
+        const v = parseInt(m.value);
+        if(v===1) asleep++; else if(v===2) restless++; else if(v===3) awake++;
+      });
+      // Map to stages: light = asleep + restless, awake = awake
+      stages = { deep:null, rem:null, light: asleep+restless, awake };
+      classicMode = true;
+    } else {
+      // Fallback from summary
+      stages = { deep:null, rem:null,
+        light: sum.asleep?.minutes||sleep.minutesAsleep||0,
+        awake: (sum.awake?.minutes||0)+(sum.restless?.minutes||0) };
+      classicMode = true;
+    }
+    sleepObj = {
+      startTime: sleep.startTime?.slice(11,16)||null,
+      endTime: sleep.endTime?.slice(11,16)||null,
+      duration: sleep.minutesAsleep || Math.round((sleep.duration||0)/60000) || 0,
+      stages, hrv,
+      avgHR: sleep.heartRateDuringMainSleep || null,
+      minHR: null
+    };
+  }
+
+  const result = { date, rhr, steps, vo2max: state.manualVO2||null, sleep: sleepObj };
+  setCached(date, result);
+  return result;
+}
+
+async function fetchPeriodData(startDate, endDate) {
+  // Build list of dates in range
+  const dates = [];
+  let cur = new Date(startDate + 'T12:00:00');
+  const end = new Date(endDate + 'T12:00:00');
+  while (cur <= end) { dates.push(cur.toISOString().split('T')[0]); cur.setDate(cur.getDate()+1); }
+
+  // Split into cached vs needed
+  const needed = dates.filter(d => !getCached(d));
+  const cached = dates.filter(d => getCached(d));
+
+  state.debugData = { startDate, endDate, total: dates.length, cached: cached.length, fetching: needed.length };
+
+  // Fetch needed days with 150ms delay to avoid 429
+  const results = dates.map(d => getCached(d));
+  for (let i = 0; i < needed.length; i++) {
+    const d = needed[i];
+    const idx = dates.indexOf(d);
+    const result = await fetchOneDay(d);
+    results[idx] = result;
+    if (i < needed.length - 1) await new Promise(r => setTimeout(r, 150));
+  }
+
+  return { days: results.filter(Boolean), log: state.debugData };
+}
+
+// ── AGGREGATION ───────────────────────────────────────────────────────────
+function avgg(arr) { const v = arr.filter(x => x != null && !isNaN(x) && isFinite(x)); return v.length ? v.reduce((a,b) => a+b, 0) / v.length : null; }
+function rf(v, d=1) { return v != null ? Math.round(v * Math.pow(10,d)) / Math.pow(10,d) : null; }
+
+function aggregate(days) {
+  if (!days || !days.length) return null;
+  const daysWithAny = days.filter(d => d && (d.rhr || d.sleep || d.steps != null || d.vo2max));
+  const sd = days.filter(d => d?.sleep);
+  const smartAvg = (arr) => { const v = arr.filter(x => x != null && !isNaN(x) && isFinite(x)); return v.length ? v.reduce((a,b) => a+b, 0) / v.length : null; };
+  const minSleepHRs = sd.map(d => d.sleep.minHR).filter(x => x != null && x > 0);
+  return {
+    avgSleepDuration: rf(smartAvg(sd.map(d => d.sleep.duration)), 0),
+    // Sleep stages not available from Fitbit v1 API (CORS blocks v1.2)
+    avgDeepPct: null, avgRemPct: null, avgLightPct: null, avgAwakePct: null,
+    avgSleepHR: rf(smartAvg(sd.map(d => d.sleep.avgHR))),
+    minSleepHR: minSleepHRs.length ? Math.min(...minSleepHRs) : null,
+    avgHRV: rf(smartAvg(sd.map(d => d.sleep.hrv))),
+    avgRHR: rf(smartAvg(days.map(d => d?.rhr))),
+    avgVO2: rf(smartAvg(days.map(d => d?.vo2max))),
+    avgSteps: rf(smartAvg(days.filter(d => d?.steps != null && d.steps > 0).map(d => d.steps)), 0),
+    firstSleep: sd[0]?.sleep || null,
+    totalDays: days.length,
+    daysWithData: daysWithAny.length,
+    daysWithSleep: sd.length,
+    daysWithRHR: days.filter(d => d?.rhr).length,
+    daysWithSteps: days.filter(d => d?.steps != null && d.steps > 0).length,
+    daysWithHRV: days.filter(d => d?.sleep?.hrv != null).length,
+    days: days.length, raw: days
+  };
+}
+
+// ── BIOLOGICAL AGE ────────────────────────────────────────────────────────
+function bioAge(agg) {
+  if (!agg || (!agg.avgVO2 && !agg.avgRHR)) return null;
+  const sex = state.sex === 'female' ? 'female' : 'male';
+  const scores = [];
+  if (agg.avgVO2 && agg.avgVO2 > 10) {
+    const ageEq = Math.max(15, Math.min(80, sex === 'male' ? 20 + (56.5 - agg.avgVO2) / 0.84 : 20 + (44.2 - agg.avgVO2) / 0.73));
+    scores.push({ bioAge: ageEq, weight: 0.40, metric: 'VO2max' });
+  }
+  if (agg.avgRHR && agg.avgRHR > 30) {
+    const ageEq = Math.max(15, Math.min(80, sex === 'male' ? 20 + (agg.avgRHR - 59) / 0.7 : 20 + (agg.avgRHR - 62) / 0.6));
+    scores.push({ bioAge: ageEq, weight: 0.25, metric: 'RHR' });
+  }
+  if (agg.avgHRV && agg.avgHRV > 5) {
+    const ageEq = Math.max(15, Math.min(80, sex === 'male' ? 20 + (65 - agg.avgHRV) / 0.9 : 20 + (68 - agg.avgHRV) / 0.85));
+    scores.push({ bioAge: ageEq, weight: 0.20, metric: 'HRV' });
+  }
+  if (agg.avgSleepHR && agg.avgSleepHR > 30) {
+    const ageEq = Math.max(18, Math.min(80, 25 + (agg.avgSleepHR - 48) / 0.25));
+    scores.push({ bioAge: ageEq, weight: 0.10, metric: 'SleepHR' });
+  }
+  if (agg.avgSleepDuration && agg.avgSleepDuration > 60) {
+    const hrs = agg.avgSleepDuration / 60;
+    const pen = hrs < 7 ? (7 - hrs) * 1.5 : hrs > 9 ? (hrs - 9) * 1.0 : 0;
+    scores.push({ bioAge: Math.max(15, Math.min(80, state.chronoAge + pen)), weight: 0.05, metric: 'Sleep' });
+  }
+  if (!scores.length) return null;
+  const totalW = scores.reduce((s,x) => s + x.weight, 0);
+  const raw = scores.reduce((s,x) => s + x.bioAge * x.weight, 0) / totalW;
+  const ca = state.chronoAge || 35;
+  const calibrated = (raw * 0.75) + (ca * 0.25);
+  const floor = Math.max(18, ca - 18);
+  agg.bioAgeBreakdown = scores.map(s => ({ ...s, bioAge: Math.round(s.bioAge) }));
+  return Math.round(Math.max(floor, Math.min(ca + 15, calibrated)));
+}
+
+// ── LOAD DATA ─────────────────────────────────────────────────────────────
+async function loadData() {
+  if (state.activeTab === 'compare') { renderCompare(); return; }
+  // Check token expiry
+  try {
+    const tokenExp = localStorage.getItem('pd_token_exp');
+    if (tokenExp && Date.now() > parseInt(tokenExp)) {
+      state.token = null; state.useMock = true;
+      localStorage.removeItem('pd_token'); localStorage.removeItem('pd_token_exp');
+      // Show in-app message instead of alert
+      document.getElementById('mainContent').innerHTML = '<div class="loader" style="color:#f59e0b">⚠️ Fitbit token expired (7 days). Please ⚙️ Disconnect and reconnect.</div>';
+      state.loading = false;
+      return;
+    }
+  } catch(e) {}
+  state.loading = true; render();
+  const range = getPeriodRange(state.period, state.offset);
+  let days = [];
+  try {
+    if (state.useMock) {
+      days = getMockDays(range.start, range.end);
+    } else {
+      let startDate = range.start;
+      // For daily view, fetch 3-day window to handle missing days
+      if (state.period === 'daily') {
+        startDate = fmt(addDays(new Date(range.start + 'T12:00:00'), -2));
+      }
+      const result = await fetchPeriodData(startDate, range.end);
+      days = result.days;
+      // For daily: pick most recent day with useful data
+      if (state.period === 'daily') {
+        const useful = days.filter(d => d.rhr || d.sleep || d.steps).reverse();
+        if (useful.length > 0) {
+          days = [useful[0]];
+          if (useful[0].date !== range.start) range.label += ' (data from ' + useful[0].date + ')';
+        }
+      }
+    }
+  } catch(e) {
+    console.error('loadData error:', e);
+  }
+  try {
+    const aggResult = aggregate(days);
+    const computedBioAge = bioAge(aggResult);
+    state.data = { ...aggResult, bioAge: computedBioAge, bioAgeBreakdown: aggResult?.bioAgeBreakdown || null, label: range.label };
+  } catch(e) {
+    console.error('aggregate error:', e);
+    state.data = { days: 0, label: range.label };
+  }
+  state.loading = false;
+  render();
+}
+
+// ── SPARKLINE SVG ─────────────────────────────────────────────────────────
+function sparklineSVG(vals, color) {
+  const v = vals.filter(x => x != null);
+  if (v.length < 2) return '';
+  const w = 120, h = 32, pad = 3;
+  const mn = Math.min(...v), mx = Math.max(...v), rng = mx - mn || 1;
+  const pts = v.map((val, i) => {
+    const x = pad + (i / (v.length - 1)) * (w - pad * 2);
+    const y = h - pad - ((val - mn) / rng) * (h - pad * 2);
+    return x + ',' + y;
+  }).join(' ');
+  const last = v[v.length - 1];
+  const lx = pad + ((v.length - 1) / (v.length - 1)) * (w - pad * 2);
+  const ly = h - pad - ((last - mn) / rng) * (h - pad * 2);
+  return `<svg viewBox="0 0 ${w} ${h}" class="sparkline"><polyline points="${pts}" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="${lx}" cy="${ly}" r="3" fill="${color}"/></svg>`;
+}
+
+// ── DONUT SVG ─────────────────────────────────────────────────────────────
+function donutSVG(stages) {
+  const total = stages.deep + stages.rem + stages.light + stages.awake || 1;
+  const slices = [
+    { key: 'deep', color: '#6366f1' }, { key: 'rem', color: '#a78bfa' },
+    { key: 'light', color: '#93c5fd' }, { key: 'awake', color: '#fca5a5' }
+  ];
+  const r = 36, cx = 46, cy = 46, sw = 14, circ = 2 * Math.PI * r;
+  let cum = 0;
+  const arcs = slices.map(s => {
+    const pct = stages[s.key] / total;
+    const dash = pct * circ;
+    const off = -cum * circ;
+    cum += pct;
+    return `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${s.color}" stroke-width="${sw}" stroke-dasharray="${dash} ${circ - dash}" stroke-dashoffset="${off}" transform="rotate(-90 ${cx} ${cy})"/>`;
+  }).join('');
+  const deepPct = Math.round(stages.deep / total * 100);
+  return `<svg viewBox="0 0 92 92" width="92" height="92">${arcs}<text x="${cx}" y="${cy - 4}" text-anchor="middle" fill="#0f172a" font-size="11" font-weight="800" font-family="Outfit,sans-serif">${deepPct}%</text><text x="${cx}" y="${cy + 8}" text-anchor="middle" fill="#94a3b8" font-size="7" font-family="Outfit,sans-serif">deep</text></svg>`;
+}
+
+// ── RENDER HELPERS ────────────────────────────────────────────────────────
+function dash(v) { return v != null ? v : '<span class="empty-dash">—</span>'; }
+function metricCard(icon, label, val, unit, color, sparkVals, sub) {
+  const spark = sparkVals ? sparklineSVG(sparkVals, color) : '';
+  return `<div class="metric-card">
+    <span class="metric-icon">${icon}</span>
+    <div class="metric-label">${label}</div>
+    <div class="metric-val">${dash(val)}<span class="metric-unit">${val != null ? unit : ''}</span></div>
+    ${sub ? `<div class="metric-sub">${sub}</div>` : ''}
+    ${spark}
+  </div>`;
+}
+
+// ── RENDER ────────────────────────────────────────────────────────────────
+function render() {
+  const el = document.getElementById('mainContent');
+  if (state.loading) { el.innerHTML = `<div class="loader"><div class="spinner"></div>Loading health data…</div>`; return; }
+  if (!state.data) { el.innerHTML = `<div class="loader">No data available</div>`; return; }
+  const d = state.data;
+  const ba = d.bioAge;
+  const ca = state.chronoAge;
+  const diff = ba != null ? ba - ca : null;
+  const baColor = diff == null ? '#94a3b8' : diff <= -5 ? '#10b981' : diff <= 0 ? '#34d399' : diff <= 5 ? '#fbbf24' : '#f87171';
+  const baLabel = diff == null ? '' : diff <= -5 ? 'Excellent' : diff <= 0 ? 'Good' : diff <= 5 ? 'Fair' : 'Needs Work';
+  const trendVO2 = d.raw?.map(x => x?.vo2max).filter(Boolean) || [];
+  const trendRHR = d.raw?.map(x => x?.rhr).filter(Boolean) || [];
+  const trendSleep = d.raw?.map(x => x?.sleep?.duration ? x.sleep.duration / 60 : null).filter(Boolean) || [];
+
+  if (state.activeTab === 'overview') {
+    el.innerHTML = `<div class="fade-up">
+      <div class="card">
+        <div class="bioage-wrap">
+          <div class="bioage-label">Biological Age</div>
+          <div class="bioage-num" style="color:${baColor}">${ba ?? '—'}</div>
+          <div class="bioage-diff">${diff != null ? (diff > 0 ? '+' + diff : diff) + ' yrs vs chronological' : 'Not enough data'}</div>
+          ${baLabel ? `<div class="bioage-badge" style="background:${baColor}20;color:${baColor}">${baLabel}</div>` : ''}
+          <div class="bioage-source">VO2 Max (40%) · Resting HR (25%) · HRV (20%) · Sleep HR (10%) · Sleep Duration (5%)</div>
+          ${d.bioAgeBreakdown ? '<div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-top:8px">' + 
+            d.bioAgeBreakdown.map(b => '<span style="font-size:10px;background:#f1f5f9;padding:2px 8px;border-radius:10px;color:#64748b">' + 
+              b.metric + ': <b style="color:#0f172a">' + Math.round(b.bioAge) + '</b></span>').join('') + '</div>' : ''}
+        </div>
+      </div>
+      <div class="metric-grid">
+        ${metricCard('🫁','VO2 Max', d.avgVO2, 'ml/kg/min', '#10b981', trendVO2)}
+        ${metricCard('❤️','Resting HR', d.avgRHR, 'bpm', '#ef4444', trendRHR)}
+        ${metricCard('🌙','Sleep', d.avgSleepDuration ? rf(d.avgSleepDuration / 60) : null, 'hrs', '#6366f1', trendSleep)}
+        ${metricCard('📈','HRV', d.avgHRV, 'ms', '#f59e0b')}
+        ${metricCard('👟','Steps', d.avgSteps?.toLocaleString(), '', '#06b6d4')}
+
+      </div>
+      <div class="card">
+        <div class="card-title">Period Summary · ${d.label}</div>
+        <div class="summary-row"><span class="summary-key">Period days</span><span class="summary-val">${d.totalDays || d.days} days</span></div>
+        <div class="summary-row"><span class="summary-key">Days with RHR data</span><span class="summary-val" style="color:var(--accent)">${d.daysWithRHR || '—'} days</span></div>
+        <div class="summary-row"><span class="summary-key">Nights with sleep data</span><span class="summary-val" style="color:var(--accent)">${d.daysWithSleep || '—'} nights</span></div>
+        <div class="summary-row"><span class="summary-key">Days with steps data</span><span class="summary-val">${d.daysWithSteps || '—'} days</span></div>
+        <div class="summary-row"><span class="summary-key">Nights with HRV data</span><span class="summary-val">${d.daysWithHRV || '—'} nights</span></div>
+        <div class="summary-row" style="font-size:11px"><span class="summary-key" style="color:var(--faint)">Averages use actual data days only</span><span class="summary-val" style="color:var(--faint)">✓</span></div>
+        <div class="summary-row"><span class="summary-key">Avg sleep HR</span><span class="summary-val">${dash(d.avgSleepHR)} ${d.avgSleepHR ? 'bpm' : ''}</span></div>
+        <div class="summary-row"><span class="summary-key">Min sleep HR</span><span class="summary-val">${dash(d.minSleepHR)} ${d.minSleepHR ? 'bpm' : ''}</span></div>
+        <div class="summary-row"><span class="summary-key">Avg HRV</span><span class="summary-val">${dash(d.avgHRV)} ${d.avgHRV ? 'ms' : ''}</span></div>
+      </div>
+    </div>`;
+  }
+
+  else if (state.activeTab === 'sleep') {
+    const sleepHrs = d.avgSleepDuration ? Math.floor(d.avgSleepDuration/60) + 'h ' + (d.avgSleepDuration%60) + 'm' : null;
+    const trendHRV = d.raw?.map(x => x?.sleep?.hrv).filter(Boolean) || [];
+    el.innerHTML = `<div class="fade-up">
+      <div class="metric-grid">
+        ${metricCard('🕐','Bedtime', state.period==='daily'&&d.firstSleep?.startTime ? d.firstSleep.startTime : null, '', '#6366f1')}
+        ${metricCard('⏱️','Duration', sleepHrs, '', '#8b5cf6')}
+        ${metricCard('❤️','Avg HR (sleep)', d.avgSleepHR, 'bpm', '#f43f5e')}
+        ${metricCard('💓','Min HR (sleep)', d.minSleepHR, 'bpm', '#ec4899')}
+        ${metricCard('📊','HRV rMSSD', d.avgHRV, 'ms', '#f59e0b', trendHRV.length > 1 ? trendHRV : null)}
+      </div>
+      ${trendSleep.length > 1 ? `<div class="card"><div class="card-title">Sleep Duration Trend</div>${sparklineSVG(trendSleep.map(v => parseFloat((v/60).toFixed(1))), '#6366f1').replace('class="sparkline"','class="sparkline" style="width:100%;height:50px"')}</div>` : ''}
+    </div>`;
+  }
+
+  else if (state.activeTab === 'heart') {
+    const vo2Status = !d.avgVO2 ? 'No VO2 max data' :
+      d.avgVO2 >= 50 ? '🏆 Excellent cardio fitness' :
+      d.avgVO2 >= 42 ? '✅ Good cardio fitness' :
+      d.avgVO2 >= 34 ? '⚠️ Average — room to improve' : '🔴 Below average — prioritise cardio';
+    const ranges = [
+      { label: 'Resting HR', range: '50–70 bpm', val: d.avgRHR, lo: 50, hi: 70, lower_better: true },
+      { label: 'VO2 Max', range: '42–50', val: d.avgVO2, lo: 42, hi: 50 },
+      { label: 'HRV rMSSD', range: '30–60 ms', val: d.avgHRV, lo: 30, hi: 60 }
+    ];
+    const bars = ranges.map(r => {
+      const inRange = r.val && r.val >= r.lo && r.val <= r.hi;
+      const pct = r.val ? Math.min(100, Math.max(5, ((r.val - r.lo + 10) / (r.hi - r.lo + 20)) * 100)) : 0;
+      const color = inRange ? '#10b981' : r.val ? '#f59e0b' : '#e2e8f0';
+      const valColor = inRange ? '#10b981' : r.val ? '#f59e0b' : '#cbd5e1';
+      return `<div class="range-bar-wrap">
+        <div class="range-bar-top">
+          <span style="color:var(--muted);font-size:12px">${r.label}</span>
+          <span style="font-weight:700;font-size:12px;color:${valColor}">${r.val ?? '—'} <span style="font-size:10px;font-weight:400;color:var(--faint)">(${r.range})</span></span>
+        </div>
+        <div class="range-bar-track"><div class="range-bar-fill" style="width:${pct}%;background:${color}"></div></div>
+      </div>`;
+    }).join('');
+    el.innerHTML = `<div class="fade-up">
+      <div class="card">
+        <div class="card-title">VO2 Max (Cardio Fitness Score)</div>
+        <div class="vo2-big" style="color:#10b981">${d.avgVO2 ?? '<span style="color:#e2e8f0">—</span>'}<span class="vo2-unit">ml/kg/min</span></div>
+        <div class="vo2-status">${vo2Status}</div>
+        ${trendVO2.length > 1 ? sparklineSVG(trendVO2, '#10b981').replace('class="sparkline"','class="sparkline" style="width:100%;height:48px;margin-top:12px"') : ''}
+      </div>
+      <div class="metric-grid">
+        ${metricCard('❤️','Resting HR', d.avgRHR, 'bpm', '#ef4444', trendRHR)}
+        ${metricCard('📈','HRV rMSSD', d.avgHRV, 'ms', '#f59e0b')}
+      </div>
+      <div class="card"><div class="card-title">Reference Ranges</div>${bars}</div>
+    </div>`;
+  }
+}
+
+// ── COMPARE ───────────────────────────────────────────────────────────────
+async function loadCompareSlot(idx) {
+  const slot = state.compareSlots[idx];
+  const range = getPeriodRange(slot.period, slot.offset);
+  let days = [];
+  if (state.useMock) {
+    days = getMockDays(range.start, range.end);
+  } else {
+    try {
+      const result = await fetchPeriodData(range.start, range.end);
+      days = result.days;
+    } catch(e) { console.error(e); }
+  }
+  const agg = aggregate(days);
+  const ba = bioAge(agg);
+  state.compareSlots[idx].data = agg ? { ...agg, bioAge: ba, bioAgeBreakdown: agg?.bioAgeBreakdown, label: range.label } : null;
+  renderCompare();
+}
+
+function renderCompare() {
+  document.getElementById('periodControls').style.display = 'none';
+  const metrics = [
+    { key:'avgSleepDuration', label:'Sleep', unit:'min', icon:'🌙', lower_better:false },
+    { key:'avgSleepHR', label:'Sleep HR', unit:'bpm', icon:'💓', lower_better:true },
+    { key:'avgHRV', label:'HRV', unit:'ms', icon:'📈', lower_better:false },
+    { key:'avgRHR', label:'Resting HR', unit:'bpm', icon:'❤️', lower_better:true },
+    { key:'avgVO2', label:'VO2 Max', unit:'', icon:'🫁', lower_better:false },
+    { key:'avgSteps', label:'Steps', unit:'', icon:'👟', lower_better:false },
+    { key:'bioAge', label:'Bio Age', unit:'yrs', icon:'🧬', lower_better:true },
+  ];
+  const periods = ['weekly','monthly','quarterly','annually'];
+
+  const slotHTML = state.compareSlots.map((slot, si) => {
+    const offCount = getOffsetCount(slot.period);
+    const offOpts = Array.from({length:offCount},(_,i) => {
+      const r = getPeriodRange(slot.period, i);
+      return `<option value="${i}" ${i===slot.offset?'selected':''}>${r.label}</option>`;
+    }).join('');
+    const pOpts = periods.map(p => `<option value="${p}" ${p===slot.period?'selected':''}>${p.charAt(0).toUpperCase()+p.slice(1)}</option>`).join('');
+    const rows = slot.data ? metrics.map(m => {
+      const v = slot.data[m.key];
+      return `<div class="compare-row"><span class="compare-row-label">${m.icon} ${m.label}</span><span class="compare-row-val">${v != null ? v + (m.unit ? ' '+m.unit : '') : '—'}</span></div>`;
+    }).join('') : '<div class="no-data">No data</div>';
+    return `<div class="compare-card">
+      <div class="compare-header">Period ${si+1}</div>
+      <select class="compare-select" onchange="onCompareperiod(${si},this.value)">${pOpts}</select>
+      <select class="compare-select" onchange="onCompareOffset(${si},this.value)">${offOpts}</select>
+      ${rows}
+    </div>`;
+  }).join('');
+
+  // Delta
+  const a = state.compareSlots[0].data, b = state.compareSlots[1].data;
+  let deltaHTML = '';
+  if (a && b) {
+    const dRows = metrics.map(m => {
+      const va = a[m.key], vb = b[m.key];
+      if (va == null || vb == null) return '';
+      const diff = parseFloat((va - vb).toFixed(1));
+      const better = m.lower_better ? diff < 0 : diff > 0;
+      const col = diff === 0 ? '#64748b' : better ? '#34d399' : '#f87171';
+      return `<div class="delta-row"><span class="delta-label">${m.icon} ${m.label}</span><span style="font-weight:700;color:${col}">${diff>0?'+':''}${diff}${m.unit?' '+m.unit:''}</span></div>`;
+    }).join('');
+    deltaHTML = `<div class="delta-card"><div class="delta-title">Δ Difference (Period 1 vs 2)</div>${dRows}</div>`;
+  }
+
+  document.getElementById('mainContent').innerHTML = `<div class="fade-up">
+    <p style="font-size:13px;color:var(--muted);margin-bottom:12px">Select two periods to compare. The Δ panel shows the difference.</p>
+    <div class="compare-grid">${slotHTML}</div>
+    ${deltaHTML}
+  </div>`;
+
+  // Load data if not yet loaded
+  state.compareSlots.forEach((slot, i) => { if (!slot.data) loadCompareSlot(i); });
+}
+
+function onCompareperiod(idx, val) {
+  state.compareSlots[idx].period = val;
+  state.compareSlots[idx].offset = 0;
+  state.compareSlots[idx].data = null;
+  loadCompareSlot(idx);
+}
+function onCompareOffset(idx, val) {
+  state.compareSlots[idx].offset = parseInt(val);
+  state.compareSlots[idx].data = null;
+  loadCompareSlot(idx);
+}
+
+// ── DEBUG ─────────────────────────────────────────────────────────────────
+async function fetchRawSleep() {
+  const p = document.getElementById('debugPanel');
+  p.style.display = 'block';
+  p.textContent = 'Testing both sleep API versions...';
+  const d = new Date(); d.setDate(d.getDate()-1);
+  const date = d.toISOString().split('T')[0];
+  let out = '';
+  // Test v1
+  try {
+    const r1 = await fetch('https://api.fitbit.com/1/user/-/sleep/date/' + date + '.json', {
+      method:'GET', mode:'cors', credentials:'omit',
+      headers:{'Authorization':'Bearer ' + state.token,'Accept':'application/json'}
+    });
+    const t1 = await r1.text();
+    const j1 = JSON.parse(t1);
+    const s1 = j1?.sleep?.[0];
+    out += 'V1 (status ' + r1.status + '):\n';
+    out += '  type: ' + (s1?.type || 'NOT PRESENT') + '\n';
+    out += '  has levels: ' + (s1?.levels ? 'YES' : 'NO') + '\n';
+    out += '  has minuteData: ' + (s1?.minuteData ? 'YES (classic)' : 'NO') + '\n';
+    out += '  levels.summary: ' + JSON.stringify(s1?.levels?.summary || 'NONE') + '\n';
+    out += '  minutesAsleep: ' + s1?.minutesAsleep + '\n\n';
+  } catch(e) { out += 'V1 error: ' + e.message + '\n\n'; }
+  // Test v1.2
+  try {
+    const r2 = await fetch('https://api.fitbit.com/1.2/user/-/sleep/date/' + date + '.json', {
+      method:'GET', mode:'cors', credentials:'omit',
+      headers:{'Authorization':'Bearer ' + state.token,'Accept':'application/json'}
+    });
+    const t2 = await r2.text();
+    const j2 = JSON.parse(t2);
+    const s2 = j2?.sleep?.[0];
+    out += 'V1.2 (status ' + r2.status + '):\n';
+    out += '  type: ' + (s2?.type || 'NOT PRESENT') + '\n';
+    out += '  has levels: ' + (s2?.levels ? 'YES' : 'NO') + '\n';
+    out += '  levels.summary: ' + JSON.stringify(s2?.levels?.summary || 'NONE') + '\n';
+    out += '  minutesAsleep: ' + s2?.minutesAsleep + '\n\n';
+  } catch(e) { out += 'V1.2 error: ' + e.message + '\n'; }
+  // Test HRV
+  try {
+    const rh = await fetch('https://api.fitbit.com/1/user/-/hrv/date/' + date + '/all.json', {
+      method:'GET', mode:'cors', credentials:'omit',
+      headers:{'Authorization':'Bearer ' + state.token,'Accept':'application/json'}
+    });
+    const th = await rh.text();
+    out += 'HRV (status ' + rh.status + '):\n' + th.slice(0,300);
+  } catch(e) { out += 'HRV error: ' + e.message; }
+  p.textContent = out;
+}
+
+function clearAllCache() {
+  try {
+    const keys = Object.keys(localStorage).filter(k => k.startsWith('pd_day_'));
+    keys.forEach(k => localStorage.removeItem(k));
+    document.getElementById('debugPanel').style.display = 'block';
+    document.getElementById('debugPanel').textContent = 'Cleared ' + keys.length + ' cached days. Reloading...';
+    setTimeout(() => loadData(), 1000);
+  } catch(e) {}
+}
+
+function showDebug() {
+  const p = document.getElementById('debugPanel');
+  if (p.style.display === 'none') {
+    p.style.display = 'block';
+    if (state.debugData) {
+      const { apiLog, result, error } = state.debugData;
+      let out = '';
+      if (error) out += 'ERROR: ' + error + '\n\n';
+      if (result) out += 'RESULT:\n' + JSON.stringify(result, null, 2) + '\n\n';
+      if (apiLog) {
+        out += 'API CALLS:\n';
+        apiLog.forEach(l => {
+          out += (l.ok ? '✓' : '✗') + ' ' + l.url + ' → ' + (l.status||'err') + '\n';
+          if (!l.ok) out += '  ' + (l.body || l.error || '') + '\n';
+        });
+      }
+      p.textContent = out || JSON.stringify(state.debugData, null, 2);
+    } else {
+      p.textContent = 'No data yet. Switch to Daily view for today/yesterday first, then open settings.';
+    }
+  } else { p.style.display = 'none'; }
+}
+
+// ── EVENT HANDLERS ────────────────────────────────────────────────────────
+function switchTab(tab, btn) {
+  state.activeTab = tab;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  if (tab === 'compare') {
+    document.getElementById('periodControls').style.display = 'none';
+    renderCompare();
+  } else {
+    document.getElementById('periodControls').style.display = 'flex';
+    if (state.data) render(); else loadData();
+  }
+}
+
+function onPeriodChange() {
+  state.period = document.getElementById('periodSelect').value;
+  state.offset = 0;
+  populateRangeSelect();
+  loadData();
+}
+function onRangeChange() {
+  state.offset = parseInt(document.getElementById('rangeSelect').value);
+  loadData();
+}
+
+function toggleSettings() {
+  const p = document.getElementById('settingsPanel');
+  p.classList.toggle('open');
+}
+
+function saveManualVO2() {
+  const v = parseFloat(document.getElementById('manualVO2').value);
+  if (v > 0) {
+    state.manualVO2 = v;
+    localStorage.setItem('pd_vo2', v);
+    document.getElementById('vo2SavedMsg').style.display = 'inline';
+    setTimeout(() => document.getElementById('vo2SavedMsg').style.display = 'none', 2000);
+    // Reload data with new VO2
+    loadData();
+  }
+}
+
+function saveProfile() {
+  state.chronoAge = parseInt(document.getElementById('chronoAge').value) || 35;
+  state.sex = document.getElementById('userSex').value;
+  localStorage.setItem('pd_age', state.chronoAge);
+  localStorage.setItem('pd_sex', state.sex);
+  if (state.data) { state.data.bioAge = bioAge(state.data); render(); }
+}
+
+function connectFitbit() {
+  const id = document.getElementById('clientIdInput').value.trim();
+  if (!id) return;
+  localStorage.setItem('pd_client_id', id);
+  const params = new URLSearchParams({
+    response_type:'token', client_id:id,
+    redirect_uri: location.origin,
+    scope:'sleep heartrate activity profile weight', expires_in:'604800'
+  });
+  location.href = 'https://www.fitbit.com/oauth2/authorize?' + params;
+}
+
+function disconnect() {
+  localStorage.removeItem('pd_token'); localStorage.removeItem('pd_token_exp');
+  state.token = null; state.useMock = true;
+  document.getElementById('btnDisconnect').style.display = 'none';
+  document.getElementById('connectSection').style.display = 'block';
+  document.getElementById('connectedSection').style.display = 'none';
+  document.getElementById('demoTag').style.display = 'block';
+  loadData();
+}
+
+function useDemoMode() {
+  state.useMock = true;
+  document.getElementById('settingsPanel').classList.remove('open');
+  loadData();
+}
+</script>
+</body>
+</html>
