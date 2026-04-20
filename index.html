@@ -190,8 +190,6 @@
       </div>
       <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
         <button onclick="showDebug()" style="font-size:11px;color:var(--accent);background:none;border:none;cursor:pointer;text-decoration:underline">Show cached data (debug)</button>
-        <button onclick="fetchRawSleep()" style="font-size:11px;color:#10b981;background:none;border:none;cursor:pointer;text-decoration:underline">🔍 Fetch raw sleep API for yesterday</button>
-        <button onclick="clearAllCache()" style="font-size:11px;color:#ef4444;background:none;border:none;cursor:pointer;text-decoration:underline">🗑️ Clear cache & re-fetch</button>
       </div>
     </div>
     <div id="debugPanel" style="display:none;margin-top:10px;background:#0f172a;border-radius:10px;padding:12px;font-size:10px;color:#94a3b8;white-space:pre-wrap;word-break:break-all;max-height:200px;overflow-y:auto;font-family:monospace"></div>
@@ -555,6 +553,11 @@ async function fetchOneDay(date) {
         method: 'GET', mode: 'cors', credentials: 'omit',
         headers: { 'Authorization': 'Bearer ' + state.token, 'Accept': 'application/json' }
       });
+      if (r.status === 429) {
+        // Rate limited - show warning and stop fetching
+        state.rateLimited = true;
+        return null;
+      }
       if (!r.ok) return null;
       return await r.json();
     } catch(e) { return null; }
@@ -853,13 +856,25 @@ function metricCard(icon, label, val, unit, color, sparkVals, sub) {
 function render() {
   const el = document.getElementById('mainContent');
   if (state.loading) { el.innerHTML = `<div class="loader"><div class="spinner"></div>Loading health data…</div>`; return; }
+  if (state.rateLimited) {
+    el.innerHTML = `<div class="loader" style="color:var(--amber)">
+      <div style="font-size:32px;margin-bottom:12px">⏳</div>
+      <div style="font-weight:600;color:var(--text);margin-bottom:8px">Fitbit rate limit reached</div>
+      <div style="font-size:13px;max-width:300px;margin:0 auto;line-height:1.6">
+        Too many API calls were made recently. Fitbit limits requests to 150/hour.<br><br>
+        <b>Please wait ~1 hour then refresh the page.</b><br><br>
+        Your cached data is safe and will reload automatically.
+      </div>
+    </div>`;
+    return;
+  }
   if (!state.data || state.data.days === 0) { 
     el.innerHTML = `<div class="loader" style="color:var(--muted)">
       <div style="font-size:32px;margin-bottom:12px">📅</div>
       <div style="font-weight:600;color:var(--text);margin-bottom:8px">No data for this period</div>
       <div style="font-size:13px;max-width:280px;margin:0 auto;line-height:1.6">
         Data for older periods loads progressively as you browse. 
-        Try selecting a more recent period, or switch to <b>Daily</b> view and navigate back day by day to cache each date.
+        Try selecting a more recent period first.
       </div>
     </div>`; 
     return; 
