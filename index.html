@@ -319,7 +319,7 @@ function setupPWA() {
 
 window.onload = () => {
   try { setupPWA(); } catch(e) { console.log('PWA setup error:', e); }
-  document.getElementById('redirectUriDisplay').textContent = location.origin;
+  document.getElementById('redirectUriDisplay').textContent = location.origin + location.pathname.replace(/\/$/,'') || location.origin;
 
   // Load saved state
   let saved = null, exp = null;
@@ -1163,7 +1163,7 @@ function connectFitbit() {
   localStorage.setItem('pd_client_id', id);
   const params = new URLSearchParams({
     response_type:'token', client_id:id,
-    redirect_uri: location.origin,
+    redirect_uri: location.origin + (location.pathname !== '/' ? location.pathname.replace(/\/$/,'') : ''),
     scope:'sleep heartrate activity profile weight', expires_in:'604800'
   });
   location.href = 'https://www.fitbit.com/oauth2/authorize?' + params;
