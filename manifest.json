@@ -1,0 +1,28 @@
+{
+  "name": "PD Bio-Age",
+  "short_name": "PD Bio-Age",
+  "description": "Personal longevity and biological age tracker",
+  "id": "/PD-Health/",
+  "start_url": "/PD-Health/",
+  "scope": "/PD-Health/",
+  "display": "standalone",
+  "background_color": "#0a0a0a",
+  "theme_color": "#0a0a0a",
+  "orientation": "portrait",
+  "lang": "en",
+  "dir": "ltr",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
