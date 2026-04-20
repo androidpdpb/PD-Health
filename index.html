@@ -185,6 +185,7 @@
           <span style="font-size:11px;color:#64748b">ml/kg/min</span>
           <span id="vo2SavedMsg" style="font-size:11px;color:#10b981;display:none">✓ Saved</span>
         </div>
+        <div style="font-size:10px;color:#f59e0b;margin-top:6px">⚠️ Must re-enter after switching devices or browsers</div>
       </div>
       <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
         <button onclick="showDebug()" style="font-size:11px;color:var(--accent);background:none;border:none;cursor:pointer;text-decoration:underline">Show cached data (debug)</button>
@@ -833,7 +834,17 @@ function metricCard(icon, label, val, unit, color, sparkVals, sub) {
 function render() {
   const el = document.getElementById('mainContent');
   if (state.loading) { el.innerHTML = `<div class="loader"><div class="spinner"></div>Loading health data…</div>`; return; }
-  if (!state.data) { el.innerHTML = `<div class="loader">No data available</div>`; return; }
+  if (!state.data || state.data.days === 0) { 
+    el.innerHTML = `<div class="loader" style="color:var(--muted)">
+      <div style="font-size:32px;margin-bottom:12px">📅</div>
+      <div style="font-weight:600;color:var(--text);margin-bottom:8px">No data for this period</div>
+      <div style="font-size:13px;max-width:280px;margin:0 auto;line-height:1.6">
+        Data for older periods loads progressively as you browse. 
+        Try selecting a more recent period, or switch to <b>Daily</b> view and navigate back day by day to cache each date.
+      </div>
+    </div>`; 
+    return; 
+  }
   const d = state.data;
   const ba = d.bioAge;
   const ca = state.chronoAge;
@@ -958,10 +969,9 @@ function renderCompare() {
   document.getElementById('periodControls').style.display = 'none';
   const metrics = [
     { key:'avgSleepDuration', label:'Sleep', unit:'min', icon:'🌙', lower_better:false },
-    { key:'avgSleepHR', label:'Sleep HR', unit:'bpm', icon:'💓', lower_better:true },
     { key:'avgHRV', label:'HRV', unit:'ms', icon:'📈', lower_better:false },
     { key:'avgRHR', label:'Resting HR', unit:'bpm', icon:'❤️', lower_better:true },
-    { key:'avgVO2', label:'VO2 Max', unit:'', icon:'🫁', lower_better:false },
+    { key:'avgVO2', label:'VO2 Max', unit:'ml/kg/min', icon:'🫁', lower_better:false },
     { key:'avgSteps', label:'Steps', unit:'', icon:'👟', lower_better:false },
     { key:'bioAge', label:'Bio Age', unit:'yrs', icon:'🧬', lower_better:true },
   ];
