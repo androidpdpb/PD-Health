@@ -174,6 +174,7 @@
     </div>
     <div id="connectedSection" style="display:none">
       <div class="connected-badge">✓ Fitbit connected — profile auto-loaded</div>
+      <div id="tokenStatus" style="font-size:10px;color:#64748b;margin-top:2px"></div>
       <div id="profileInfo"></div>
       <div style="margin-top:12px;padding:10px;background:#f0f9ff;border-radius:10px;border:1px solid #bae6fd">
         <div style="font-size:11px;font-weight:700;color:#0369a1;margin-bottom:6px">📱 Enter Cardio Fitness Score from Fitbit app</div>
@@ -181,7 +182,7 @@
         <div style="display:flex;gap:8px;align-items:center">
           <input type="number" id="manualVO2" placeholder="e.g. 56" step="0.1"
             style="width:90px;padding:7px 10px;border:1.5px solid #bae6fd;border-radius:8px;font-size:14px;font-weight:700"
-            onchange="saveManualVO2()"/>
+            oninput="saveManualVO2()" onchange="saveManualVO2()"/>
           <span style="font-size:11px;color:#64748b">ml/kg/min</span>
           <span id="vo2SavedMsg" style="font-size:11px;color:#10b981;display:none">✓ Saved</span>
         </div>
@@ -324,7 +325,12 @@ window.onload = () => {
 
   // Load saved state
   let saved = null, exp = null;
-  try { saved = localStorage.getItem('pd_token'); exp = localStorage.getItem('pd_token_exp'); } catch(e) {}
+  try { 
+    saved = localStorage.getItem('pd_token'); 
+    exp = localStorage.getItem('pd_token_exp');
+    // Fallback to sessionStorage
+    if (!saved) { saved = sessionStorage.getItem('pd_token_bk'); exp = sessionStorage.getItem('pd_token_exp_bk'); }
+  } catch(e) {}
   if (saved && exp && Date.now() < parseInt(exp)) {
     state.token = saved; state.useMock = false;
     document.getElementById('btnDisconnect').style.display = 'inline-block';
@@ -394,6 +400,8 @@ window.onload = () => {
     if (t) {
       localStorage.setItem('pd_token', t);
       localStorage.setItem('pd_token_exp', exp.toString());
+      // Also save to sessionStorage as backup
+      try { sessionStorage.setItem('pd_token_bk', t); sessionStorage.setItem('pd_token_exp_bk', exp.toString()); } catch(e) {}
       state.token = t; state.useMock = false;
       history.replaceState(null, '', location.pathname);
       document.getElementById('btnDisconnect').style.display = 'inline-block';
@@ -405,7 +413,18 @@ window.onload = () => {
   }
 
   // Also fetch profile on reload if already connected
-  if (state.token) fetchFitbitProfile();
+  if (state.token) {
+    fetchFitbitProfile();
+    // Show token expiry
+    try {
+      const tokenExp = localStorage.getItem('pd_token_exp');
+      if (tokenExp) {
+        const daysLeft = Math.floor((parseInt(tokenExp) - Date.now()) / (1000*60*60*24));
+        const el = document.getElementById('tokenStatus');
+        if (el) el.textContent = daysLeft > 0 ? '🔑 Token valid for ' + daysLeft + ' more day(s)' : '⚠️ Token expired — please reconnect';
+      }
+    } catch(e) {}
+  }
 
   populateRangeSelect();
   loadData();
