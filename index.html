@@ -566,11 +566,32 @@ async function fetchOneDay(date) {
 
   // Fetch all metrics for this date in parallel
   const [hrData, sleepData, stepsData, hrvData] = await Promise.all([
+   const [hrData, sleepData, stepsData, hrvData, cardioData] = await Promise.all([
     get('activities/heart/date/' + date + '/1d.json'),
     get('sleep/date/' + date + '.json', '1.2').then(r => r || get('sleep/date/' + date + '.json', '1')),
     get('activities/steps/date/' + date + '/1d.json'),
     get('hrv/date/' + date + '/all.json'),
+    get('cardioscore/date/' + date + '.json'),
   ]);
+
+  // Parse VO2 Max (Cardio Fitness Score)
+  // Fitbit returns either a range like "44-48" (no GPS run data) or a single number like "45" (GPS run data available)
+  // If a range, take the midpoint
+  let vo2FromApi = null;
+  const cardioArr = cardioData?.cardioScore || [];
+  if (cardioArr.length > 0) {
+    const raw = cardioArr[0]?.value?.vo2Max;
+    if (raw) {
+      const str = String(raw);
+      if (str.includes('-')) {
+        const [lo, hi] = str.split('-').map(parseFloat);
+        if (!isNaN(lo) && !isNaN(hi)) vo2FromApi = parseFloat(((lo + hi) / 2).toFixed(1));
+      } else {
+        const num = parseFloat(str);
+        if (!isNaN(num)) vo2FromApi = num;
+      }
+    }
+  }
 
   // Parse RHR
   const rhr = hrData?.['activities-heart']?.[0]?.value?.restingHeartRate || null;
@@ -652,7 +673,7 @@ async function fetchOneDay(date) {
     };
   }
 
-  const result = { date, rhr, steps, vo2max: state.manualVO2||null, sleep: sleepObj };
+  const result = { date, rhr, steps, vo2max: vo2FromApi || state.manualVO2 || null, sleep: sleepObj };
   setCached(date, result);
   return result;
 }
@@ -1209,7 +1230,7 @@ function connectFitbit() {
   const params = new URLSearchParams({
     response_type:'token', client_id:id,
     redirect_uri: 'https://androidpdpb.github.io/PD-Health',
-    scope:'sleep heartrate activity profile weight', expires_in:'604800'
+    scope:'sleep heartrate activity profile weight cardio_fitness', expires_in:'604800'
   });
   location.href = 'https://www.fitbit.com/oauth2/authorize?' + params;
 }
