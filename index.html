@@ -527,7 +527,7 @@ async function fitbitFetch(path, ver) {
 // Adds 200ms delay between calls to avoid 429 rate limiting.
 const CACHE_PREFIX = 'pd_day_';
 
-const CACHE_VERSION = 'v5'; // v5: fixed HRV path + classic sleep // Bump to invalidate old cached data
+const CACHE_VERSION = 'v6'; // v6: added VO2 Max auto-fetch, removed Sleep HR // Bump to invalidate old cached data
 function getCached(date) {
   try {
     const v = localStorage.getItem(CACHE_PREFIX + date);
@@ -564,9 +564,8 @@ async function fetchOneDay(date) {
     } catch(e) { return null; }
   };
 
-  // Fetch all metrics for this date in parallel
-  const [hrData, sleepData, stepsData, hrvData] = await Promise.all([
-   const [hrData, sleepData, stepsData, hrvData, cardioData] = await Promise.all([
+ // Fetch all metrics for this date in parallel
+  const [hrData, sleepData, stepsData, hrvData, cardioData] = await Promise.all([
     get('activities/heart/date/' + date + '/1d.json'),
     get('sleep/date/' + date + '.json', '1.2').then(r => r || get('sleep/date/' + date + '.json', '1')),
     get('activities/steps/date/' + date + '/1d.json'),
