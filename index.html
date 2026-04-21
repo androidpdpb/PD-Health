@@ -756,11 +756,7 @@ function bioAge(agg) {
     const ageEq = Math.max(18, Math.min(80, 25 + (agg.avgSleepHR - 48) / 0.25));
     scores.push({ bioAge: ageEq, weight: 0.10, metric: 'SleepHR' });
   }
-  if (agg.avgSleepDuration && agg.avgSleepDuration > 60) {
-    const hrs = agg.avgSleepDuration / 60;
-    const pen = hrs < 7 ? (7 - hrs) * 1.5 : hrs > 9 ? (hrs - 9) * 1.0 : 0;
-    scores.push({ bioAge: Math.max(15, Math.min(80, state.chronoAge + pen)), weight: 0.05, metric: 'Sleep' });
-  }
+  
   if (!scores.length) return null;
   const totalW = scores.reduce((s,x) => s + x.weight, 0);
   const raw = scores.reduce((s,x) => s + x.bioAge * x.weight, 0) / totalW;
@@ -919,7 +915,7 @@ function render() {
           <div class="bioage-num" style="color:${baColor}">${ba ?? '—'}</div>
           <div class="bioage-diff">${diff != null ? (diff > 0 ? '+' + diff : diff) + ' yrs vs chronological' : 'Not enough data'}</div>
           ${baLabel ? `<div class="bioage-badge" style="background:${baColor}20;color:${baColor}">${baLabel}</div>` : ''}
-          <div class="bioage-source">VO2 Max (40%) · Resting HR (25%) · HRV (20%) · Sleep HR (10%) · Sleep Duration (5%)</div>
+          <div class="bioage-source">VO2 Max (45%) · Resting HR (28%) · HRV (22%) · Sleep Duration (5%)</div>
           ${d.bioAgeBreakdown ? '<div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-top:8px">' + 
             d.bioAgeBreakdown.map(b => '<span style="font-size:10px;background:#f1f5f9;padding:2px 8px;border-radius:10px;color:#64748b">' + 
               b.metric + ': <b style="color:#0f172a">' + Math.round(b.bioAge) + '</b></span>').join('') + '</div>' : ''}
@@ -941,8 +937,6 @@ function render() {
         <div class="summary-row"><span class="summary-key">Days with steps data</span><span class="summary-val">${d.daysWithSteps || '—'} days</span></div>
         <div class="summary-row"><span class="summary-key">Nights with HRV data</span><span class="summary-val">${d.daysWithHRV || '—'} nights</span></div>
         <div class="summary-row" style="font-size:11px"><span class="summary-key" style="color:var(--faint)">Averages use actual data days only</span><span class="summary-val" style="color:var(--faint)">✓</span></div>
-        <div class="summary-row"><span class="summary-key">Avg sleep HR</span><span class="summary-val">${dash(d.avgSleepHR)} ${d.avgSleepHR ? 'bpm' : ''}</span></div>
-        <div class="summary-row"><span class="summary-key">Min sleep HR</span><span class="summary-val">${dash(d.minSleepHR)} ${d.minSleepHR ? 'bpm' : ''}</span></div>
         <div class="summary-row"><span class="summary-key">Avg HRV</span><span class="summary-val">${dash(d.avgHRV)} ${d.avgHRV ? 'ms' : ''}</span></div>
       </div>
     </div>`;
@@ -955,8 +949,6 @@ function render() {
       <div class="metric-grid">
         ${metricCard('🕐','Bedtime', state.period==='daily'&&d.firstSleep?.startTime ? d.firstSleep.startTime : null, '', '#6366f1')}
         ${metricCard('⏱️','Duration', sleepHrs, '', '#8b5cf6')}
-        ${metricCard('❤️','Avg HR (sleep)', d.avgSleepHR, 'bpm', '#f43f5e')}
-        ${metricCard('💓','Min HR (sleep)', d.minSleepHR, 'bpm', '#ec4899')}
         ${metricCard('📊','HRV rMSSD', d.avgHRV, 'ms', '#f59e0b', trendHRV.length > 1 ? trendHRV : null)}
       </div>
       ${trendSleep.length > 1 ? `<div class="card"><div class="card-title">Sleep Duration Trend</div>${sparklineSVG(trendSleep.map(v => parseFloat((v/60).toFixed(1))), '#6366f1').replace('class="sparkline"','class="sparkline" style="width:100%;height:50px"')}</div>` : ''}
